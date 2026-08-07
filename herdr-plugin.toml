@@ -1,0 +1,60 @@
+# herdr-recall — coding-brain inside Herdr.
+#
+# Thin wrappers over the `coding-brain` npm CLI (installed on demand via npx).
+# Three entry points:
+#   - a pane that runs the coding-brain viewer
+#   - a popup that searches your past sessions
+#   - an event hook that saves what your agents just did, whenever an agent finishes
+
+id = "herdr-recall"
+name = "herdr-recall"
+version = "0.1.0"
+description = "Your coding agents' long-term memory: search past sessions, see what they learned, and save new sessions automatically."
+min_herdr_version = "0.8.0"
+platforms = ["macos", "linux"]
+
+# ── Panes ────────────────────────────────────────────────────────────────────
+
+# The coding-brain viewer (local web UI) running in a split beside your work.
+[[panes]]
+id = "brain-ui"
+title = "Brain"
+placement = "split"
+command = ["bash", "scripts/ui-pane.sh"]
+
+# Interactive search over everything your agents have done in past sessions.
+[[panes]]
+id = "search"
+title = "Recall"
+placement = "popup"
+width = "80%"
+height = "70%"
+command = ["bash", "scripts/search-pane.sh"]
+
+# ── Actions (bind these to keys in ~/.config/herdr/config.toml) ──────────────
+
+[[actions]]
+id = "open-ui"
+title = "Open brain viewer"
+description = "Open the coding-brain viewer in a split pane."
+command = ["bash", "scripts/open-pane.sh", "brain-ui"]
+
+[[actions]]
+id = "search"
+title = "Search past sessions"
+description = "Search everything your coding agents have done, in a popup."
+command = ["bash", "scripts/open-pane.sh", "search"]
+
+[[actions]]
+id = "remember-now"
+title = "Remember this session now"
+description = "Save the newest agent session into the brain immediately."
+command = ["bash", "scripts/harvest.sh", "--manual"]
+
+# ── Event hooks ──────────────────────────────────────────────────────────────
+
+# When any agent pane finishes a turn, save the newest unsaved session.
+# Debounced (10 min) so chatty status changes don't stack runs.
+[[events]]
+on = "pane.agent_status_changed"
+command = ["bash", "scripts/harvest.sh"]
