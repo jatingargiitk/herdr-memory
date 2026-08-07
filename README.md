@@ -1,4 +1,4 @@
-# herdr-recall
+# herdr-memory
 
 Your coding agents' long-term memory, inside [Herdr](https://herdr.dev).
 
@@ -19,7 +19,7 @@ with context instead of amnesia.
 ## Install
 
 ```
-herdr plugin install jatingargiitk/herdr-recall
+herdr plugin install jatingargiitk/herdr-memory
 ```
 
 Requires Node.js (the plugin calls the `coding-brain` CLI via `npx`). If you have
@@ -34,21 +34,21 @@ Bind these in `~/.config/herdr/config.toml`:
 [[keys.command]]
 key = "prefix+b"
 type = "plugin_action"
-command = "herdr-recall.open-ui"
+command = "herdr-memory.open-ui"
 description = "open brain viewer"
 
 [[keys.command]]
 key = "prefix+/"
 type = "plugin_action"
-command = "herdr-recall.search"
+command = "herdr-memory.search"
 description = "search past sessions"
 ```
 
 | Action | What it does |
 | --- | --- |
-| `herdr-recall.open-ui` | Open the coding-brain viewer in a split pane |
-| `herdr-recall.search` | Search past sessions in a popup |
-| `herdr-recall.remember-now` | Save the newest session immediately |
+| `herdr-memory.open-ui` | Open the coding-brain viewer in a split pane |
+| `herdr-memory.search` | Search past sessions in a popup |
+| `herdr-memory.remember-now` | Save the newest session immediately |
 
 ## How it works
 

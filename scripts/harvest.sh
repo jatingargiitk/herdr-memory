@@ -8,7 +8,7 @@
 set -uo pipefail
 
 herdr_bin="${HERDR_BIN_PATH:-herdr}"
-state_dir="${HERDR_PLUGIN_STATE_DIR:-${TMPDIR:-/tmp}/herdr-recall}"
+state_dir="${HERDR_PLUGIN_STATE_DIR:-${TMPDIR:-/tmp}/herdr-memory}"
 mkdir -p "$state_dir"
 stamp_file="$state_dir/last-harvest-epoch"
 log_file="$state_dir/harvest.log"

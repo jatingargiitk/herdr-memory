@@ -1,4 +1,4 @@
-# herdr-recall — coding-brain inside Herdr.
+# herdr-memory — coding-brain inside Herdr.
 #
 # Thin wrappers over the `coding-brain` npm CLI (installed on demand via npx).
 # Three entry points:
@@ -6,8 +6,8 @@
 #   - a popup that searches your past sessions
 #   - an event hook that saves what your agents just did, whenever an agent finishes
 
-id = "herdr-recall"
-name = "herdr-recall"
+id = "herdr-memory"
+name = "herdr-memory"
 version = "0.1.0"
 description = "Your coding agents' long-term memory: search past sessions, see what they learned, and save new sessions automatically."
 min_herdr_version = "0.8.0"
