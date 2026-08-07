@@ -1,83 +1,89 @@
 #!/usr/bin/env bash
-# Saves the newest unsaved agent session into the brain (`coding-brain harvest`).
+# Saves what an agent just did, into the memory for the folder it was working in.
 #
-# Two invocation modes:
-#   --manual                  from the "remember-now" action: always runs, shows a notification
-#   (no args, event hook)     from pane.agent_status_changed: runs only when an agent
-#                             reaches "done" or "idle", debounced to once per 10 minutes
+#   (no args)   event hook on pane.agent_status_changed — herdr tells us which pane
+#               finished; we ask herdr which folder that pane was working in, and
+#               save there. Honours the `auto` config flag, debounced per folder.
+#   --manual    the "Save this session now" action — always runs, reports via notification
+#
+# Creates the memory store on first use, so there is no setup step.
 set -uo pipefail
 
+here="$(dirname "$0")"
 # shellcheck source=lib.sh
-. "$(dirname "$0")/lib.sh"
+. "$here/lib.sh"
 
-herdr_bin="${HERDR_BIN_PATH:-herdr}"
-state_dir="${HERDR_PLUGIN_STATE_DIR:-${TMPDIR:-/tmp}/herdr-memory}"
-mkdir -p "$state_dir"
-stamp_file="$state_dir/last-harvest-epoch"
-log_file="$state_dir/harvest.log"
-DEBOUNCE_SECONDS=600
+ensure_config
+mkdir -p "$STATE_DIR"
+log_file="$STATE_DIR/harvest.log"
 
 manual=0
 [ "${1:-}" = "--manual" ] && manual=1
-
-# No brain in this workspace yet — the plugin is installed but never set up.
-# Say so once, on an explicit request; stay silent on the automatic path so a
-# fresh install doesn't log a failure after every single agent turn.
-if ! find_brain >/dev/null; then
-  if [ "$manual" -eq 1 ]; then
-    "$herdr_bin" notification show \
-      "No memory set up for this folder — run: npx coding-brain init" >/dev/null 2>&1 || true
-  fi
-  exit 0
-fi
+status=""; agent=""; workspace=""; pane_id=""
 
 if [ "$manual" -eq 0 ]; then
-  # Only react when an agent finishes (status "done" or settles to "idle").
-  status=$(printf '%s' "${HERDR_PLUGIN_EVENT_JSON:-}" | python3 -c '
-import json, sys
-try:
-    payload = json.load(sys.stdin)
-except Exception:
-    sys.exit(0)
-def find_status(node):
-    if isinstance(node, dict):
-        for key, value in node.items():
-            if key == "status" and isinstance(value, str):
-                return value
-            found = find_status(value)
-            if found:
-                return found
-    elif isinstance(node, list):
-        for item in node:
-            found = find_status(item)
-            if found:
-                return found
-    return None
-print(find_status(payload) or "")
-' 2>/dev/null)
+  [ "$(cfg auto true)" = "true" ] || exit 0
+
+  # Ask herdr where this agent actually is. The hook process's cwd is not it —
+  # herdr may run many agents across different folders and worktrees at once.
+  snapshot="$STATE_DIR/snapshot.$$.json"
+  "$HERDR_BIN" api snapshot > "$snapshot" 2>/dev/null || true
+  resolved=$(printf '%s' "${HERDR_PLUGIN_EVENT_JSON:-}" | python3 "$here/resolve.py" "$snapshot" 2>/dev/null)
+  rm -f "$snapshot"
+
+  if [ -n "$resolved" ]; then
+    while IFS='=' read -r key value; do
+      case "$key" in
+        workspace) workspace="$value" ;;
+        status) status="$value" ;;
+        agent) agent="$value" ;;
+        pane_id) pane_id="$value" ;;
+      esac
+    done <<< "$resolved"
+  fi
+
+  # Only react when an agent finishes (status "done", or settles to "idle").
   case "$status" in
     done|idle) ;;
     *) exit 0 ;;
   esac
+fi
 
+[ -n "$workspace" ] || workspace=$(target_workspace)
+[ -d "$workspace" ] || exit 0
+
+# Debounce per folder, not globally — an agent finishing in one worktree must not
+# mute a different agent finishing in another.
+if [ "$manual" -eq 0 ]; then
+  debounce_minutes=$(cfg debounce_minutes 10)
+  case "$debounce_minutes" in ''|*[!0-9]*) debounce_minutes=10 ;; esac
+  slug=$(printf '%s' "$workspace" | tr -c 'A-Za-z0-9' '-')
+  stamp_file="$STATE_DIR/last-save.$slug"
   now=$(date +%s)
   last=$(cat "$stamp_file" 2>/dev/null || echo 0)
-  [ $((now - last)) -lt "$DEBOUNCE_SECONDS" ] && exit 0
+  case "$last" in ''|*[!0-9]*) last=0 ;; esac
+  [ $((now - last)) -lt $((debounce_minutes * 60)) ] && exit 0
   echo "$now" > "$stamp_file"
 fi
 
+if ! brain=$(ensure_brain "$workspace"); then
+  echo "── $(date '+%Y-%m-%d %H:%M:%S') could not create memory in $workspace" >> "$log_file"
+  [ "$manual" -eq 1 ] && notify "Couldn't set up memory here — is Node installed?"
+  exit 0
+fi
+
 {
-  echo "── $(date '+%Y-%m-%d %H:%M:%S') harvest (manual=$manual, status=${status:-n/a})"
-  npx -y coding-brain harvest 2>&1
-  rc=$?
-  echo "── exit $rc"
+  echo "── $(date '+%Y-%m-%d %H:%M:%S') save (manual=$manual, agent=${agent:-?}, pane=${pane_id:-?}, status=${status:-n/a})"
+  echo "   folder: $workspace"
+  ( cd "$workspace" && npx -y "$CB_PKG" harvest 2>&1 )
+  echo "── exit $?"
 } >> "$log_file"
 
 if [ "$manual" -eq 1 ]; then
-  if [ "${rc:-1}" -eq 0 ]; then
-    "$herdr_bin" notification show "Session saved to your coding brain." >/dev/null 2>&1 || true
+  if tail -1 "$log_file" | grep -q "exit 0"; then
+    notify "Session saved to memory."
   else
-    "$herdr_bin" notification show "Saving session failed — see harvest.log in the plugin state dir." >/dev/null 2>&1 || true
+    notify "Saving failed — see harvest.log ($STATE_DIR)."
   fi
 fi
 

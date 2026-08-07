@@ -31,6 +31,15 @@ width = "80%"
 height = "70%"
 command = ["bash", "scripts/search-pane.sh"]
 
+# Optional one-off: compile a starting picture from sessions that predate the install.
+[[panes]]
+id = "backfill"
+title = "Learn from earlier sessions"
+placement = "popup"
+width = "80%"
+height = "70%"
+command = ["bash", "scripts/backfill.sh"]
+
 # ── Actions (bind these to keys in ~/.config/herdr/config.toml) ──────────────
 
 [[actions]]
@@ -46,10 +55,22 @@ description = "Search everything your coding agents have done, in a popup."
 command = ["bash", "scripts/open-pane.sh", "search"]
 
 [[actions]]
-id = "remember-now"
-title = "Remember this session now"
-description = "Save the newest agent session into the brain immediately."
+id = "save-now"
+title = "Save this session now"
+description = "Save what the agents here just did, immediately."
 command = ["bash", "scripts/harvest.sh", "--manual"]
+
+[[actions]]
+id = "toggle-auto"
+title = "Toggle automatic saving"
+description = "Turn automatic saving on or off."
+command = ["bash", "scripts/toggle-auto.sh"]
+
+[[actions]]
+id = "backfill"
+title = "Learn from earlier sessions"
+description = "Read the sessions you had before installing this and compile a starting picture."
+command = ["bash", "scripts/open-pane.sh", "backfill"]
 
 # ── Event hooks ──────────────────────────────────────────────────────────────
 
