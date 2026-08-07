@@ -7,6 +7,9 @@
 #                             reaches "done" or "idle", debounced to once per 10 minutes
 set -uo pipefail
 
+# shellcheck source=lib.sh
+. "$(dirname "$0")/lib.sh"
+
 herdr_bin="${HERDR_BIN_PATH:-herdr}"
 state_dir="${HERDR_PLUGIN_STATE_DIR:-${TMPDIR:-/tmp}/herdr-memory}"
 mkdir -p "$state_dir"
@@ -16,6 +19,17 @@ DEBOUNCE_SECONDS=600
 
 manual=0
 [ "${1:-}" = "--manual" ] && manual=1
+
+# No brain in this workspace yet — the plugin is installed but never set up.
+# Say so once, on an explicit request; stay silent on the automatic path so a
+# fresh install doesn't log a failure after every single agent turn.
+if ! find_brain >/dev/null; then
+  if [ "$manual" -eq 1 ]; then
+    "$herdr_bin" notification show \
+      "No memory set up for this folder — run: npx coding-brain init" >/dev/null 2>&1 || true
+  fi
+  exit 0
+fi
 
 if [ "$manual" -eq 0 ]; then
   # Only react when an agent finishes (status "done" or settles to "idle").

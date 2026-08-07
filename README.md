@@ -22,9 +22,18 @@ with context instead of amnesia.
 herdr plugin install jatingargiitk/herdr-memory
 ```
 
-Requires Node.js (the plugin calls the `coding-brain` CLI via `npx`). If you have
-never set up coding-brain in a workspace, run `npx coding-brain init` there first —
-the plugin saves and searches sessions, it doesn't do first-time setup for you.
+Requires Node.js (the plugin calls the `coding-brain` CLI via `npx`).
+
+Then, once per folder you work in:
+
+```
+npx coding-brain init
+```
+
+That scans the agent sessions you already have there, builds a starting picture of
+your projects, and turns on automatic saving. Until you run it, the plugin's panes
+tell you so and the automatic saving stays quiet — nothing breaks, it just has
+nothing to remember yet.
 
 ## Actions
 

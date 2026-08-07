@@ -3,6 +3,16 @@
 # Empty query (or Ctrl-C / Ctrl-D) closes the popup.
 set -uo pipefail
 
+# shellcheck source=lib.sh
+. "$(dirname "$0")/lib.sh"
+
+if ! find_brain >/dev/null; then
+  print_setup_hint
+  printf '\nPress Enter to close. '
+  IFS= read -r _ || true
+  exit 0
+fi
+
 while true; do
   printf '\nsearch past sessions (empty to close): '
   IFS= read -r query || exit 0
