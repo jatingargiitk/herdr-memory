@@ -109,6 +109,26 @@ ensure_brain() {
       --yes --hooks-only --no-hooks --no-ui ) >/dev/null 2>&1
   brain=$(find_brain "$workspace")
 
+  # Initialize brain structure: create STATE.md and sessions/topics dirs
+  if [ -n "$brain" ]; then
+    mkdir -p "$brain/sessions" "$brain/topics"
+    if [ ! -f "$brain/STATE.md" ]; then
+      cat > "$brain/STATE.md" << 'EOF'
+# Brain State
+
+**Created:** $(date)
+
+## Summary
+Fresh brain, ready to learn from your agent sessions.
+
+## Next Steps
+- Run agents (Claude Code, Cursor, Codex, etc.)
+- Brain auto-saves on every session finish
+- Optionally backfill past sessions to jump-start learning
+EOF
+    fi
+  fi
+
   # Interactive setup on first agent finish (not in cron/CI environments)
   if [ -n "$brain" ] && [ -t 0 ]; then
     notify "Brain created. Import past sessions? (waiting for response...)"
