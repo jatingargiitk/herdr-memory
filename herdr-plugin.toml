@@ -67,12 +67,6 @@ description = "Turn automatic saving on or off."
 command = ["bash", "scripts/toggle-auto.sh"]
 
 [[actions]]
-id = "init"
-title = "Set up brain (first time)"
-description = "Create your brain and optionally import past sessions."
-command = ["bash", "scripts/init.sh"]
-
-[[actions]]
 id = "backfill"
 title = "Learn from earlier sessions"
 description = "Read the sessions you had before installing this and compile a starting picture."

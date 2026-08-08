@@ -109,15 +109,23 @@ ensure_brain() {
       --yes --hooks-only --no-hooks --no-ui ) >/dev/null 2>&1
   brain=$(find_brain "$workspace")
 
-  # Offer to backfill past sessions (first-time setup only)
+  # Interactive setup on first agent finish (not in cron/CI environments)
   if [ -n "$brain" ] && [ -t 0 ]; then
-    printf 'Memory created. Import past sessions to give the brain a head start? [y/N] '
-    read -r -t 10 response 2>/dev/null || response="N"
+    notify "Brain created. Import past sessions? (waiting for response...)"
+    printf '\nImport past sessions to give brain a head start? [y/N] '
+    read -r -t 15 response 2>/dev/null || response="N"
     case "$response" in
       y|Y)
-        ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ) \
-          && notify "Brain imported past sessions." \
-          || notify "Backfill skipped (optional)."
+        printf 'Importing... (this takes 1-3 min)\n'
+        if ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ) >> "$STATE_DIR/harvest.log"; then
+          notify "Brain ready. Auto-save is on."
+        else
+          notify "Backfill skipped, but brain is ready."
+        fi
+        ;;
+      *)
+        printf 'Skipped. Brain learns from now on.\n'
+        notify "Brain ready. Auto-save is on."
         ;;
     esac
   fi
