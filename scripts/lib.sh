@@ -98,16 +98,15 @@ target_workspace() {
 # alone — herdr's own agent events are the trigger here, so installing a second
 # set of hooks would just duplicate work. Prints the brain path on success.
 ensure_brain() {
-  local workspace="$1" brain
-  if brain=$(find_brain "$workspace"); then
+  local workspace="$1" brain="$1/.coding-brain"
+  if [ -d "$brain" ]; then
     printf '%s\n' "$brain"
     return 0
   fi
 
-  # First time: scaffold the brain
+  # First time: scaffold the brain in this exact workspace (don't walk up)
   ( cd "$workspace" && CODING_BRAIN_NO_UI=1 npx -y "$CB_PKG" init \
       --yes --hooks-only --no-hooks --no-ui ) >/dev/null 2>&1
-  brain=$(find_brain "$workspace")
 
   # Initialize brain structure: create STATE.md and sessions/topics dirs
   if [ -n "$brain" ]; then
