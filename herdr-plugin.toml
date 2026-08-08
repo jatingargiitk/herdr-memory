@@ -72,6 +72,12 @@ title = "Learn from earlier sessions"
 description = "Read the sessions you had before installing this and compile a starting picture."
 command = ["bash", "scripts/open-pane.sh", "backfill"]
 
+# ── Startup (first time only) ────────────────────────────────────────────
+
+# On first herdr startup after install, prompt to initialize brain and backfill.
+[[startup_commands]]
+command = ["bash", "scripts/first-run.sh"]
+
 # ── Event hooks ──────────────────────────────────────────────────────────────
 
 # When any agent pane finishes a turn, save the newest unsaved session.
