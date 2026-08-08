@@ -52,12 +52,14 @@ fi
 [ -n "$workspace" ] || workspace=$(target_workspace)
 [ -d "$workspace" ] || exit 0
 
+# Workspace slug for tracking (needed for both debounce and backfill)
+slug=$(printf '%s' "$workspace" | tr -c 'A-Za-z0-9' '-')
+
 # Debounce per folder, not globally — an agent finishing in one worktree must not
 # mute a different agent finishing in another.
 if [ "$manual" -eq 0 ]; then
   debounce_minutes=$(cfg debounce_minutes 10)
   case "$debounce_minutes" in ''|*[!0-9]*) debounce_minutes=10 ;; esac
-  slug=$(printf '%s' "$workspace" | tr -c 'A-Za-z0-9' '-')
   stamp_file="$STATE_DIR/last-save.$slug"
   now=$(date +%s)
   last=$(cat "$stamp_file" 2>/dev/null || echo 0)
