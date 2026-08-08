@@ -25,7 +25,7 @@ Codex, or custom agent you run feeds the same brain.
 herdr plugin install jatingargiitk/herdr-memory
 ```
 
-That's it. On your first `herdr` command after installing, you'll see:
+Then run your first agent in Herdr. When it finishes, you'll see:
 
 ```
 Do you want to import past sessions? (1-3 min, one model call)
