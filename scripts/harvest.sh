@@ -74,13 +74,23 @@ if ! brain=$(ensure_brain "$workspace"); then
   exit 0
 fi
 
-# Auto-backfill on first agent run (fresh brain with no sessions yet)
+# Auto-backfill on first agent run, so the brain is useful immediately rather
+# than after weeks of accumulation. `init` (not `harvest`) is the backfill
+# command: harvest distills ONE transcript, init compiles the whole recent
+# corpus into digests + topic notes + STATE. `--no-hooks` keeps herdr the only
+# trigger; NO `--hooks-only`, which would skip the compile entirely.
 if [ ! -f "$STATE_DIR/backfill_done.$slug" ] && [ -d "$brain/sessions" ]; then
   if [ "$(ls -1 "$brain/sessions" 2>/dev/null | wc -l)" -eq 0 ]; then
-    echo "── $(date '+%Y-%m-%d %H:%M:%S') first run detected, auto-backfilling past sessions..."
-    ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ) >> "$log_file"
+    echo "── $(date '+%Y-%m-%d %H:%M:%S') first run in $workspace — compiling starter brain from recent sessions" >> "$log_file"
+    notify "🧠 Compiling your brain from recent sessions (~2-5 min)…"
+    if ( cd "$workspace" && CODING_BRAIN_NO_UI=1 npx -y "$CB_PKG" init \
+           --yes --no-hooks --no-ui 2>&1 ) >> "$log_file"; then
+      notify "🧠 Brain ready — compiled from your recent sessions."
+    else
+      notify "🧠 Brain ready — starter compile skipped, learning from here on."
+    fi
+    # Marked done either way: a failed compile must not retry on every finish.
     touch "$STATE_DIR/backfill_done.$slug"
-    notify "🧠 Brain initialized with past sessions"
   fi
 fi
 

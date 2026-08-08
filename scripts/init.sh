@@ -24,7 +24,7 @@ if brain=$(find_brain "$workspace"); then
   case "$response" in
     y|Y)
       printf '\nImporting past sessions... (this takes 1-3 min)\n'
-      if ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ); then
+      if ( cd "$workspace" && CODING_BRAIN_NO_UI=1 npx -y "$CB_PKG" init --yes --no-hooks --no-ui 2>&1 ); then
         echo "✓ Brain updated with your past work."
       else
         echo "⚠ Backfill skipped, but brain is ready."
@@ -57,7 +57,7 @@ read -r -t 15 response 2>/dev/null || response="N"
 case "$response" in
   y|Y)
     printf '\nImporting past sessions... (this takes 1-3 min)\n'
-    if ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ); then
+    if ( cd "$workspace" && CODING_BRAIN_NO_UI=1 npx -y "$CB_PKG" init --yes --no-hooks --no-ui 2>&1 ); then
       echo ""
       echo "✓ Brain now knows about your past work."
       echo "Auto-save is ON — brain learns from every agent session."

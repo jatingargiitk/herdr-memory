@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # Shared helpers. Sourced by the other scripts; not executable on its own.
 
-# The npm spec used for every call. Pinned: `--no-hooks` (which keeps us from
-# touching the user's editor config) landed in 0.1.7, and the CLI ignores unknown
-# flags rather than erroring — so an older version would silently install hooks.
+# The npm spec used for every call. Pinned at 0.1.10: `--no-hooks` (keeps us
+# from touching the user's editor config) landed in 0.1.7, and the full-brain
+# starter compile — digests + topic notes, over the last 7 days or 30 sessions,
+# whichever is larger — landed in 0.1.10. The CLI ignores unknown flags rather
+# than erroring, so an older version fails silently rather than loudly: it would
+# install hooks we don't want, or scaffold an empty brain and look like it worked.
 # Override with CODING_BRAIN_PKG to test against a local build.
-CB_PKG="${CODING_BRAIN_PKG:-coding-brain@^0.1.7}"
+CB_PKG="${CODING_BRAIN_PKG:-coding-brain@^0.1.10}"
 
 CONFIG_DIR="${HERDR_PLUGIN_CONFIG_DIR:-${TMPDIR:-/tmp}/herdr-memory-config}"
 STATE_DIR="${HERDR_PLUGIN_STATE_DIR:-${TMPDIR:-/tmp}/herdr-memory-state}"
@@ -136,7 +139,7 @@ EOF
     case "$response" in
       y|Y)
         printf 'Importing... (this takes 1-3 min)\n'
-        if ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ) >> "$STATE_DIR/harvest.log"; then
+        if ( cd "$workspace" && CODING_BRAIN_NO_UI=1 npx -y "$CB_PKG" init --yes --no-hooks --no-ui 2>&1 ) >> "$STATE_DIR/harvest.log"; then
           notify "Brain ready. Auto-save is on."
         else
           notify "Backfill skipped, but brain is ready."
