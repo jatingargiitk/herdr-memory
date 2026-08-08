@@ -103,9 +103,26 @@ ensure_brain() {
     printf '%s\n' "$brain"
     return 0
   fi
+
+  # First time: scaffold the brain
   ( cd "$workspace" && CODING_BRAIN_NO_UI=1 npx -y "$CB_PKG" init \
       --yes --hooks-only --no-hooks --no-ui ) >/dev/null 2>&1
-  find_brain "$workspace"
+  brain=$(find_brain "$workspace")
+
+  # Offer to backfill past sessions (first-time setup only)
+  if [ -n "$brain" ] && [ -t 0 ]; then
+    printf 'Memory created. Import past sessions to give the brain a head start? [y/N] '
+    read -r -t 10 response 2>/dev/null || response="N"
+    case "$response" in
+      y|Y)
+        ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ) \
+          && notify "Brain imported past sessions." \
+          || notify "Backfill skipped (optional)."
+        ;;
+    esac
+  fi
+
+  printf '%s\n' "$brain"
 }
 
 notify() {
