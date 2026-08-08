@@ -72,6 +72,16 @@ if ! brain=$(ensure_brain "$workspace"); then
   exit 0
 fi
 
+# Auto-backfill on first agent run (fresh brain with no sessions yet)
+if [ ! -f "$STATE_DIR/backfill_done.$slug" ] && [ -d "$brain/sessions" ]; then
+  if [ "$(ls -1 "$brain/sessions" 2>/dev/null | wc -l)" -eq 0 ]; then
+    echo "── $(date '+%Y-%m-%d %H:%M:%S') first run detected, auto-backfilling past sessions..."
+    ( cd "$workspace" && npx -y "$CB_PKG" harvest --backfill 2>&1 ) >> "$log_file"
+    touch "$STATE_DIR/backfill_done.$slug"
+    notify "🧠 Brain initialized with past sessions"
+  fi
+fi
+
 {
   echo "── $(date '+%Y-%m-%d %H:%M:%S') save (manual=$manual, agent=${agent:-?}, pane=${pane_id:-?}, status=${status:-n/a})"
   echo "   folder: $workspace"
