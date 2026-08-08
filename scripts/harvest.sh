@@ -85,12 +85,15 @@ if [ ! -f "$STATE_DIR/backfill_done.$slug" ] && [ -d "$brain/sessions" ]; then
     notify "🧠 Compiling your brain from recent sessions (~2-5 min)…"
     if ( cd "$workspace" && CODING_BRAIN_NO_UI=1 npx -y "$CB_PKG" init \
            --yes --no-hooks --no-ui 2>&1 ) >> "$log_file"; then
+      # Mark done ONLY on success. Marking on failure too looks like it stops a
+      # retry storm, but it permanently poisons the workspace: one bad compile
+      # and the brain never backfills again. Debounce already caps retry rate.
+      touch "$STATE_DIR/backfill_done.$slug"
       notify "🧠 Brain ready — compiled from your recent sessions."
     else
-      notify "🧠 Brain ready — starter compile skipped, learning from here on."
+      echo "── $(date '+%Y-%m-%d %H:%M:%S') starter compile failed; will retry next finish" >> "$log_file"
+      notify "🧠 Brain ready — starter compile will retry."
     fi
-    # Marked done either way: a failed compile must not retry on every finish.
-    touch "$STATE_DIR/backfill_done.$slug"
   fi
 fi
 

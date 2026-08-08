@@ -33,10 +33,13 @@ find_brain() {
 ensure_config() {
   [ -f "$CONFIG_FILE" ] && return 0
   mkdir -p "$CONFIG_DIR"
+  # 30-minute debounce: every harvest is one call on a good model, so cost
+  # scales with frequency, not tier. Fewer, meatier harvests are also better
+  # digests — each one sees a whole chunk of work instead of a fragment.
   cat > "$CONFIG_FILE" <<'EOF'
 {
   "auto": true,
-  "debounce_minutes": 10,
+  "debounce_minutes": 30,
   "workspace_root": null
 }
 EOF
