@@ -3,11 +3,11 @@
 **A brain that gets smarter as you work.**
 
 A [Herdr](https://herdr.dev) plugin that watches every agent you run and builds a
-**living brain** of your workspace — decisions, what worked, what failed, patterns
+**living brain** of your workspace. Decisions, what worked, what failed, patterns
 you've learned. Not a transcript dump. A compiled current state that stays fresh
 as you work.
 
-The brain **rewrites itself** as you work — every session distills into the current
+The brain **rewrites itself** as you work. Every session distills into the current
 truth, old facts get replaced, decisions compound. Three weeks in, you ask "how did
 we do this?" and the brain gives you the *current* answer based on everything
 since, not a stale log of what you said then.
@@ -103,7 +103,7 @@ Unlike transcript search tools that grow stale as they pile up, this brain
 - Commits to git so you can see what changed
 
 This is the same model OpenAI, Anthropic, and Google landed on for background
-memory consolidation this year: bigger pile ≠ better memory. Cleaner pile is.
+memory consolidation this year: bigger pile is not better memory. Cleaner pile is.
 
 ## Limits
 
