@@ -25,17 +25,19 @@ Codex, or custom agent you run feeds the same brain.
 herdr plugin install jatingargiitk/herdr-memory
 ```
 
-The brain is created automatically the first time an agent finishes, in that
-agent's working folder. No config, no account, no init step. If you want to give
-the brain a head start (import what you learned before installing), run:
+Then set up with one command:
 
 ```sh
-herdr plugin action invoke backfill --plugin herdr-memory
+herdr plugin action invoke init --plugin herdr-memory
 ```
 
-That reads your past sessions, compiles them, and gives the brain a starting picture.
-It costs one model call and confirms first. Skip it and the brain starts learning
-from your next session forward.
+This will:
+1. Create your memory store
+2. Prompt: **"Import past sessions to give the brain a head start?"**
+   - Say `y` to read earlier work (~1-3 min, costs one model call)
+   - Say `N` to skip (brain learns from your next session forward)
+
+Or skip init and the brain auto-scaffolds when your first agent finishes.
 
 ## Use
 
