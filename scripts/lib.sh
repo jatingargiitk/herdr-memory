@@ -8,7 +8,7 @@
 # than erroring, so an older version fails silently rather than loudly: it would
 # install hooks we don't want, or scaffold an empty brain and look like it worked.
 # Override with CODING_BRAIN_PKG to test against a local build.
-CB_PKG="${CODING_BRAIN_PKG:-coding-brain@^0.1.10}"
+CB_PKG="${CODING_BRAIN_PKG:-coding-brain@^0.1.12}"
 
 CONFIG_DIR="${HERDR_PLUGIN_CONFIG_DIR:-${TMPDIR:-/tmp}/herdr-memory-config}"
 STATE_DIR="${HERDR_PLUGIN_STATE_DIR:-${TMPDIR:-/tmp}/herdr-memory-state}"
